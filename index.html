@@ -8,8 +8,8 @@
     :root {
       --bg: #090a0f;
       --bg-secondary: #12141c;
-      --glass: rgba(255, 255, 255, 0.04);
-      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
       --primary: #7c5cfc;
       --primary-glow: rgba(124, 92, 252, 0.35);
       --secondary: #00e5ff;
@@ -26,61 +26,82 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
     body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; display: flex; flex-direction: column; }
     
-    /* Background Orbs */
     .bg-animated { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
     .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 10s infinite alternate ease-in-out; }
     .orb-1 { width: 350px; height: 350px; background: var(--primary); top: -100px; left: -100px; }
     .orb-2 { width: 400px; height: 400px; background: var(--secondary); bottom: -150px; right: -150px; animation-delay: -3s; }
     @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(30px, 50px) scale(1.1); } }
 
-    .app-container { max-width: 750px; width: 100%; margin: 0 auto; padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .app-container { max-width: 760px; width: 100%; margin: 0 auto; padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
     .screen { display: none; animation: fadeIn 0.4s ease; }
     .screen.active { display: flex; flex-direction: column; gap: 20px; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    .glass-card { background: var(--glass); border: 1.5px solid var(--glass-border); backdrop-filter: blur(20px); border-radius: var(--radius); padding: 32px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+    .glass-card { background: var(--glass); border: 1.5px solid var(--glass-border); backdrop-filter: blur(20px); border-radius: var(--radius); padding: 28px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
     
-    /* Typography & Buttons */
     h1, h2, h3 { font-family: 'Orbitron', monospace; font-weight: 900; }
     .logo { font-size: 2.2rem; text-align: center; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px; }
     .subtitle { text-align: center; color: var(--text-dim); font-size: 0.9rem; margin-bottom: 24px; }
     
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 24px; border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; border: none; transition: var(--transition); font-size: 0.95rem; }
     .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 20px var(--primary-glow); }
-    .btn-primary:hover { transform: translateY(-2px); opacity: 0.9; }
+    .btn-primary:hover { transform: translateY(-2px); opacity: 0.95; }
     .btn-secondary { background: var(--secondary); color: #000; }
-    .btn-secondary:hover { transform: translateY(-2px); }
     .btn-ghost { background: transparent; border: 1.5px solid var(--glass-border); color: var(--text); }
     .btn-ghost:hover { background: rgba(255,255,255,0.06); }
+    .btn-danger { background: rgba(255,68,68,0.2); border: 1px solid var(--red); color: var(--red); }
 
     .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; width: 100%; }
     .form-label { font-size: 0.82rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
-    .form-input { background: rgba(255,255,255,0.05); border: 1.5px solid var(--glass-border); border-radius: var(--radius-sm); padding: 14px 18px; color: var(--text); font-size: 1rem; outline: none; transition: var(--transition); width: 100%; }
-    .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+    .form-input, .form-select { background: rgba(255,255,255,0.05); border: 1.5px solid var(--glass-border); border-radius: var(--radius-sm); padding: 12px 16px; color: var(--text); font-size: 0.95rem; outline: none; transition: var(--transition); width: 100%; }
+    .form-input:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+    .form-select option { background: var(--bg-secondary); color: var(--text); }
+
+    /* Avatar Grid */
+    .avatar-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 16px; }
+    .avatar-opt { width: 100%; aspect-ratio: 1; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; cursor: pointer; border: 2.5px solid transparent; transition: var(--transition); }
+    .avatar-opt.selected { border-color: #fff; box-shadow: 0 0 0 3px var(--primary); transform: scale(1.1); }
+    
+    .color-grid { display: flex; gap: 10px; margin-bottom: 16px; }
+    .color-opt { width: 34px; height: 34px; border-radius: 50%; cursor: pointer; border: 2.5px solid transparent; }
+    .color-opt.selected { border-color: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,0.4); }
+
+    .avatar-preview { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 16px; border: 3px solid rgba(255,255,255,0.2); box-shadow: 0 0 30px var(--primary-glow); }
+
+    /* Question Cards List */
+    .q-list-item { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
     /* Lobby Grid */
     .players-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin: 16px 0; max-height: 220px; overflow-y: auto; }
     .p-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); padding: 14px; text-align: center; }
-    .avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 8px; border: 2px solid rgba(255,255,255,0.2); }
 
     /* Game Question View */
-    .q-card { background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: var(--radius); padding: 28px; text-align: center; margin-bottom: 20px; }
-    .q-text { font-size: 1.25rem; font-weight: 700; line-height: 1.5; margin-top: 10px; }
-    .answers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .q-card { background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: var(--radius); padding: 24px; text-align: center; margin-bottom: 16px; position: relative; }
+    .q-text { font-size: 1.2rem; font-weight: 700; line-height: 1.5; margin-top: 8px; }
+    .answers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
     @media(max-width:550px){ .answers-grid { grid-template-columns: 1fr; } }
-    .ans-btn { background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: var(--radius-sm); padding: 18px; color: var(--text); font-weight: 600; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; transition: var(--transition); }
+    
+    .ans-btn { background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: var(--radius-sm); padding: 16px; color: var(--text); font-weight: 600; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; transition: var(--transition); }
     .ans-btn:hover:not(:disabled) { border-color: var(--primary); background: rgba(124,92,252,0.1); transform: translateY(-2px); }
     .ans-btn.selected { border-color: var(--secondary); background: rgba(0,229,255,0.15); }
     .ans-btn.correct { border-color: var(--green); background: rgba(0,255,170,0.2); }
     .ans-btn.wrong { border-color: var(--red); background: rgba(255,68,68,0.2); }
+    .ans-btn.eliminated { opacity: 0.2; pointer-events: none; }
     .ans-letter { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 900; flex-shrink: 0; }
 
-    /* Toast Notification */
+    /* Powers Bar */
+    .powers-bar { display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; }
+    .power-btn { display: flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: var(--radius-sm); border: 1.5px solid var(--glass-border); background: rgba(0,0,0,0.3); color: var(--text); font-weight: 700; font-size: 0.8rem; cursor: pointer; }
+    .power-btn:hover:not(.used) { transform: translateY(-2px); border-color: var(--gold); }
+    .power-btn.used { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
+
+    /* Timer Ring */
+    .timer-badge { font-family: 'Orbitron'; font-weight: 900; font-size: 1.2rem; color: var(--gold); background: rgba(0,0,0,0.4); padding: 6px 16px; border-radius: 50px; border: 1px solid var(--glass-border); }
+
     #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-    .toast { background: rgba(18, 20, 28, 0.95); border: 1.5px solid var(--glass-border); padding: 12px 24px; border-radius: 50px; font-weight: 600; font-size: 0.88rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; }
+    .toast { background: rgba(18, 20, 28, 0.95); border: 1.5px solid var(--glass-border); padding: 12px 24px; border-radius: 50px; font-weight: 600; font-size: 0.88rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: auto; }
     .toast.success { border-color: var(--green); color: var(--green); }
     .toast.error { border-color: var(--red); color: var(--red); }
-    @keyframes toastIn { from { opacity: 0; transform: translateY(-20px); scale: 0.9; } to { opacity: 1; transform: translateY(0); scale: 1; } }
   </style>
 </head>
 <body>
@@ -97,7 +118,7 @@
     <div id="screen-home" class="screen active">
       <div class="glass-card" style="text-align: center;">
         <div class="logo">QuizArena</div>
-        <p class="subtitle">The ultimate real-time multi-device quiz battle platform! 🏆</p>
+        <p class="subtitle">Real-time multi-device battle quiz platform! 🏆</p>
         <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
           <button class="btn btn-primary" onclick="goToScreen('screen-host-setup')" style="flex: 1; min-width: 140px;">🎮 Host Game</button>
           <button class="btn btn-secondary" onclick="goToScreen('screen-join')" style="flex: 1; min-width: 140px;">🚀 Join Game</button>
@@ -105,36 +126,66 @@
       </div>
     </div>
 
-    <!-- 2. HOST SETUP SCREEN -->
+    <!-- 2. HOST SETUP & QUESTION BUILDER SCREEN -->
     <div id="screen-host-setup" class="screen">
       <div class="glass-card">
-        <h2>🎮 Create Quiz Room</h2>
-        <p class="subtitle">Set up your game title and quick question.</p>
-        <div class="form-group">
-          <label class="form-label">Your Host Name</label>
-          <input type="text" id="host-name" class="form-input" value="Host" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Quiz Title</label>
-          <input type="text" id="quiz-title" class="form-input" value="General Knowledge Clash" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Sample Question</label>
-          <input type="text" id="q-text" class="form-input" value="Which planet is closest to the Sun?" />
-        </div>
+        <h2>🎮 Quiz Setup</h2>
+        <p class="subtitle">Set up details and add as many questions as you like!</p>
+        
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <input type="text" id="opt-0" class="form-input" value="Venus" />
-          <input type="text" id="opt-1" class="form-input" value="Mercury" />
-          <input type="text" id="opt-2" class="form-input" value="Earth" />
-          <input type="text" id="opt-3" class="form-input" value="Mars" />
+          <div class="form-group">
+            <label class="form-label">Host Name</label>
+            <input type="text" id="host-name" class="form-input" value="Host" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quiz Title</label>
+            <input type="text" id="quiz-title" class="form-input" value="Ultimate Battle Quiz" />
+          </div>
         </div>
-        <div class="form-group" style="margin-top: 12px;">
-          <label class="form-label">Correct Option (0 to 3)</label>
-          <input type="number" id="q-correct" class="form-input" value="1" min="0" max="3" />
+
+        <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 16px 0;" />
+
+        <h3>📝 Questions Added (<span id="q-added-count">0</span>)</h3>
+        <div id="questions-list-container" style="margin: 12px 0;"></div>
+
+        <!-- Add Question Box -->
+        <div style="background: rgba(0,0,0,0.2); padding: 18px; border-radius: var(--radius-sm); border: 1.5px dashed var(--glass-border); margin-bottom: 20px;">
+          <h4 style="font-size: 0.9rem; margin-bottom: 12px; color: var(--secondary);">+ Add New Question</h4>
+          <div class="form-group">
+            <input type="text" id="add-q-text" class="form-input" placeholder="Type your question here..." />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+            <input type="text" id="add-opt-0" class="form-input" placeholder="Option A" />
+            <input type="text" id="add-opt-1" class="form-input" placeholder="Option B" />
+            <input type="text" id="add-opt-2" class="form-input" placeholder="Option C" />
+            <input type="text" id="add-opt-3" class="form-input" placeholder="Option D" />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+            <div class="form-group">
+              <label class="form-label">Correct Option</label>
+              <select id="add-correct" class="form-select">
+                <option value="0">Option A</option>
+                <option value="1">Option B</option>
+                <option value="2">Option C</option>
+                <option value="3">Option D</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time Limit</label>
+              <select id="add-time" class="form-select">
+                <option value="10">10 Seconds</option>
+                <option value="15">15 Seconds</option>
+                <option value="20" selected>20 Seconds</option>
+                <option value="30">30 Seconds</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-ghost" style="width: 100%; border-color: var(--secondary); color: var(--secondary);" onclick="addQuestionToList()">+ Add Question to Quiz</button>
         </div>
-        <div style="display: flex; gap: 12px; margin-top: 16px;">
+
+        <div style="display: flex; gap: 12px;">
           <button class="btn btn-ghost" onclick="goToScreen('screen-home')">Back</button>
-          <button class="btn btn-primary" style="flex: 1;" onclick="createRoom()">Create Room & Lobby 🚀</button>
+          <button class="btn btn-primary" style="flex: 1;" onclick="createRoom()">Create Room & Open Lobby 🚀</button>
         </div>
       </div>
     </div>
@@ -142,33 +193,48 @@
     <!-- 3. HOST LOBBY SCREEN -->
     <div id="screen-host-lobby" class="screen">
       <div class="glass-card" style="text-align: center;">
-        <span style="background: rgba(0,255,170,0.15); color: var(--green); padding: 4px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: 700;">🟢 ROOM OPEN</span>
+        <span style="background: rgba(0,255,170,0.15); color: var(--green); padding: 4px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: 700;">🟢 LOBBY OPEN</span>
         <h1 id="host-room-code" style="font-size: 3rem; color: var(--gold); letter-spacing: 6px; margin: 12px 0;">------</h1>
         <p id="share-link-text" style="color: var(--text-dim); font-size: 0.85rem; word-break: break-all; margin-bottom: 20px;"></p>
         
-        <h3 style="text-align: left; font-size: 1rem; margin-bottom: 8px;">👥 Joined Players (<span id="player-count">0</span>)</h3>
-        <div class="players-grid" id="host-players-grid">
-          <p style="color: var(--text-dim); grid-column: 1/-1; padding: 20px;">Waiting for players to connect from other devices...</p>
-        </div>
+        <h3 style="text-align: left; font-size: 1rem; margin-bottom: 8px;">👥 Players in Lobby (<span id="player-count">0</span>)</h3>
+        <div class="players-grid" id="host-players-grid"></div>
 
         <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" id="start-game-btn" onclick="hostStartGame()" disabled>🎮 Start Quiz Battle</button>
       </div>
     </div>
 
-    <!-- 4. JOIN GAME SCREEN -->
+    <!-- 4. JOIN GAME SCREEN (WITH AVATAR SELECTOR) -->
     <div id="screen-join" class="screen">
       <div class="glass-card">
         <h2>🚀 Join Room</h2>
-        <p class="subtitle">Enter the 6-character room code given by the host.</p>
+        <p class="subtitle">Enter code, pick your avatar & custom color!</p>
+        
         <div class="form-group">
           <label class="form-label">Room Code</label>
           <input type="text" id="join-code" class="form-input" placeholder="ABC123" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 4px; font-family: 'Orbitron';" oninput="this.value=this.value.toUpperCase()" />
         </div>
+
         <div class="form-group">
           <label class="form-label">Your Nickname</label>
           <input type="text" id="join-name" class="form-input" placeholder="Player Name" maxlength="20" />
         </div>
-        <div style="display: flex; gap: 12px; margin-top: 12px;">
+
+        <!-- Avatar Selection -->
+        <div class="form-group">
+          <label class="form-label">Choose Avatar</label>
+          <div class="avatar-grid" id="avatar-grid-container"></div>
+        </div>
+
+        <!-- Color Selection -->
+        <div class="form-group">
+          <label class="form-label">Avatar Color Theme</label>
+          <div class="color-grid" id="color-grid-container"></div>
+        </div>
+
+        <div class="avatar-preview" id="avatar-preview-box">🦊</div>
+
+        <div style="display: flex; gap: 12px;">
           <button class="btn btn-ghost" onclick="goToScreen('screen-home')">Back</button>
           <button class="btn btn-secondary" style="flex: 1;" onclick="joinRoom()">Join Lobby 🎮</button>
         </div>
@@ -178,14 +244,14 @@
     <!-- 5. PLAYER LOBBY WAITING SCREEN -->
     <div id="screen-player-lobby" class="screen">
       <div class="glass-card" style="text-align: center;">
-        <div style="font-size: 3.5rem; margin-bottom: 10px;">🦊</div>
+        <div class="avatar-preview" id="player-my-avatar" style="margin-bottom: 12px;">🦊</div>
         <h2 id="player-welcome-title">Connected!</h2>
-        <p class="subtitle">Waiting for host to start the game...</p>
+        <p class="subtitle">Waiting for host to launch the battle...</p>
         <div style="background: rgba(0,0,0,0.3); padding: 14px; border-radius: var(--radius-sm); margin-bottom: 20px;">
-          <span style="font-size: 0.75rem; color: var(--text-dim);">ROOM</span>
+          <span style="font-size: 0.75rem; color: var(--text-dim);">ROOM CODE</span>
           <div id="player-room-display" style="font-size: 1.5rem; font-family: 'Orbitron'; color: var(--gold); font-weight: 900;">------</div>
         </div>
-        <h3 style="text-align: left; font-size: 0.95rem; margin-bottom: 8px;">👥 Players in Lobby</h3>
+        <h3 style="text-align: left; font-size: 0.95rem; margin-bottom: 8px;">👥 Connected Players</h3>
         <div class="players-grid" id="player-lobby-grid"></div>
       </div>
     </div>
@@ -193,25 +259,37 @@
     <!-- 6. LIVE GAMEPLAY SCREEN -->
     <div id="screen-game" class="screen">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <span id="game-q-num" style="font-family: 'Orbitron'; font-weight: 700; color: var(--text-dim);">QUESTION 1</span>
-        <span id="game-score-display" style="font-family: 'Orbitron'; font-weight: 900; color: var(--gold); font-size: 1.1rem;">Score: 0</span>
+        <span id="game-q-num" style="font-family: 'Orbitron'; font-weight: 700; color: var(--text-dim);">Q 1/1</span>
+        <div class="timer-badge" id="timer-display">20s</div>
+        <span id="game-score-display" style="font-family: 'Orbitron'; font-weight: 900; color: var(--gold); font-size: 1.1rem;">0 pts</span>
       </div>
 
       <div class="q-card">
         <div class="q-text" id="game-q-text">Loading question...</div>
       </div>
 
+      <!-- Player Power-Ups -->
+      <div class="powers-bar" id="player-powers-bar" style="display: none;">
+        <button class="power-btn" id="pw-double" onclick="usePower('double')">⚡ Double Pts</button>
+        <button class="power-btn" id="pw-5050" onclick="usePower('5050')">🎯 50-50</button>
+      </div>
+
       <div class="answers-grid" id="game-answers-grid"></div>
+
+      <!-- Host View Controls -->
+      <div id="host-game-controls" style="display: none; margin-top: 10px;">
+        <button class="btn btn-primary" style="width: 100%;" id="host-next-btn" onclick="hostAdvanceQuestion()">▶ Next Question</button>
+      </div>
     </div>
 
     <!-- 7. RESULTS SCREEN -->
     <div id="screen-results" class="screen">
       <div class="glass-card" style="text-align: center;">
         <div style="font-size: 4rem;">🏆</div>
-        <h2>Game Over!</h2>
-        <p class="subtitle">Final Leaderboard standings</p>
+        <h2>Final Rankings</h2>
+        <p class="subtitle">QuizArena Battle Champions</p>
         <div id="final-leaderboard" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;"></div>
-        <button class="btn btn-primary" onclick="goToScreen('screen-home')">Play Again 🏠</button>
+        <button class="btn btn-primary" onclick="goToScreen('screen-home')">Return Home 🏠</button>
       </div>
     </div>
 
@@ -220,9 +298,21 @@
   <!-- MQTT Engine for Cross-Device Sync -->
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <script>
-    // --- APP CORE & STATE ---
-    let currentScreen = 'screen-home';
-    let role = 'player'; // 'host' or 'player'
+    const AVATARS = ['🦊', '🦁', '🐱', '🐶', '🐼', '🐯', '🐸', '🐵', '🦄', '🤖', '👾', '🚀'];
+    const COLORS = [
+      'linear-gradient(135deg,#7c5cfc,#a855f7)',
+      'linear-gradient(135deg,#00e5ff,#0080ff)',
+      'linear-gradient(135deg,#ff4b7e,#ff8c42)',
+      'linear-gradient(135deg,#00ffaa,#00b894)',
+      'linear-gradient(135deg,#ffd700,#ff7675)',
+      'linear-gradient(135deg,#e84393,#6c5ce7)'
+    ];
+
+    let selectedAvatar = AVATARS[0];
+    let selectedColor = COLORS[0];
+    let currentQuestions = [];
+
+    let role = 'player';
     let roomCode = '';
     let playerId = 'usr_' + Math.random().toString(36).substring(2, 8);
     let playerName = '';
@@ -230,10 +320,15 @@
     let mqttClient = null;
     let myScore = 0;
 
+    let currentQIdx = 0;
+    let qTimer = null;
+    let timeLeft = 20;
+    let doubleActive = false;
+    let usedPowers = { double: false, '5050': false };
+
     function goToScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
-      currentScreen = screenId;
     }
 
     function showToast(msg, type = 'success') {
@@ -245,7 +340,93 @@
       setTimeout(() => t.remove(), 3000);
     }
 
-    // --- MQTT REALTIME NETWORK SYNC ---
+    // --- AVATAR BUILDER ---
+    function initAvatarBuilder() {
+      const avGrid = document.getElementById('avatar-grid-container');
+      avGrid.innerHTML = AVATARS.map((a, i) => `
+        <div class="avatar-opt ${i===0?'selected':''}" onclick="selectAvatar('${a}', this)">${a}</div>
+      `).join('');
+
+      const colGrid = document.getElementById('color-grid-container');
+      colGrid.innerHTML = COLORS.map((c, i) => `
+        <div class="color-opt ${i===0?'selected':''}" style="background:${c}" onclick="selectColor('${c}', this)"></div>
+      `).join('');
+
+      updateAvatarPreview();
+    }
+
+    function selectAvatar(a, el) {
+      document.querySelectorAll('.avatar-opt').forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedAvatar = a;
+      updateAvatarPreview();
+    }
+
+    function selectColor(c, el) {
+      document.querySelectorAll('.color-opt').forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedColor = c;
+      updateAvatarPreview();
+    }
+
+    function updateAvatarPreview() {
+      const box = document.getElementById('avatar-preview-box');
+      box.textContent = selectedAvatar;
+      box.style.background = selectedColor;
+    }
+
+    // --- QUESTION BUILDER LOGIC ---
+    function addQuestionToList() {
+      const text = document.getElementById('add-q-text').value.trim();
+      const opts = [
+        document.getElementById('add-opt-0').value.trim(),
+        document.getElementById('add-opt-1').value.trim(),
+        document.getElementById('add-opt-2').value.trim(),
+        document.getElementById('add-opt-3').value.trim()
+      ];
+      const correct = parseInt(document.getElementById('add-correct').value);
+      const time = parseInt(document.getElementById('add-time').value);
+
+      if (!text) { showToast('Type question text!', 'error'); return; }
+      if (opts.filter(o => o).length < 2) { showToast('Add at least 2 options!', 'error'); return; }
+
+      currentQuestions.push({ text, options: opts, correct, time });
+      renderQuestionsList();
+
+      document.getElementById('add-q-text').value = '';
+      document.getElementById('add-opt-0').value = '';
+      document.getElementById('add-opt-1').value = '';
+      document.getElementById('add-opt-2').value = '';
+      document.getElementById('add-opt-3').value = '';
+      showToast('Question added! ✅', 'success');
+    }
+
+    function renderQuestionsList() {
+      const container = document.getElementById('questions-list-container');
+      document.getElementById('q-added-count').textContent = currentQuestions.length;
+
+      if (!currentQuestions.length) {
+        container.innerHTML = '<p style="color:var(--text-dim); font-size:0.85rem;">No questions added yet.</p>';
+        return;
+      }
+
+      container.innerHTML = currentQuestions.map((q, i) => `
+        <div class="q-list-item">
+          <div>
+            <div style="font-weight:700; font-size:0.9rem;">Q${i+1}: ${q.text}</div>
+            <div style="font-size:0.75rem; color:var(--text-dim);">⏱️ ${q.time}s | Correct: ${q.options[q.correct]}</div>
+          </div>
+          <button class="btn btn-danger" style="padding:4px 10px; font-size:0.75rem;" onclick="removeQuestion(${i})">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    function removeQuestion(idx) {
+      currentQuestions.splice(idx, 1);
+      renderQuestionsList();
+    }
+
+    // --- NETWORK ENGINE ---
     function initNetwork(code, onMsgCallback) {
       roomCode = code.toUpperCase();
       const brokerUrl = 'wss://broker.hivemq.com:8884/mqtt';
@@ -278,16 +459,13 @@
 
     // --- HOST LOGIC ---
     function createRoom() {
+      if (!currentQuestions.length) {
+        showToast('Add at least 1 question first!', 'error');
+        return;
+      }
+
       const name = document.getElementById('host-name').value.trim() || 'Host';
-      const title = document.getElementById('quiz-title').value.trim();
-      const qText = document.getElementById('q-text').value.trim();
-      const opts = [
-        document.getElementById('opt-0').value.trim(),
-        document.getElementById('opt-1').value.trim(),
-        document.getElementById('opt-2').value.trim(),
-        document.getElementById('opt-3').value.trim()
-      ];
-      const correct = parseInt(document.getElementById('q-correct').value) || 0;
+      const title = document.getElementById('quiz-title').value.trim() || 'Quiz Arena';
 
       roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       playerName = name;
@@ -297,27 +475,26 @@
         title,
         status: 'lobby',
         players: {},
-        questions: [{ text: qText, options: opts, correct: correct, time: 20 }]
+        questions: currentQuestions
       };
 
       document.getElementById('host-room-code').textContent = roomCode;
       const shareUrl = `${window.location.origin}${window.location.pathname}?code=${roomCode}`;
-      document.getElementById('share-link-text').innerHTML = `Share Link: <a href="${shareUrl}" target="_blank" style="color:var(--secondary);">${shareUrl}</a>`;
+      document.getElementById('share-link-text').innerHTML = `Share URL: <a href="${shareUrl}" target="_blank" style="color:var(--secondary);">${shareUrl}</a>`;
 
       goToScreen('screen-host-lobby');
       initNetwork(roomCode, handleHostMessages);
 
-      // Heartbeat pulse to sync players
       setInterval(() => {
         if (roomData.status === 'lobby') {
           broadcast({ type: 'sync_lobby', roomData });
         }
-      }, 2000);
+      }, 1500);
     }
 
     function handleHostMessages(data) {
       if (data.type === 'player_join') {
-        roomData.players[data.playerId] = { id: data.playerId, name: data.name, score: 0 };
+        roomData.players[data.playerId] = { id: data.playerId, name: data.name, avatar: data.avatar, color: data.color, score: 0 };
         renderHostLobby();
         broadcast({ type: 'sync_lobby', roomData });
         showToast(`${data.name} joined!`, 'success');
@@ -325,7 +502,6 @@
       else if (data.type === 'submit_answer') {
         if (roomData.players[data.playerId]) {
           roomData.players[data.playerId].score += data.score;
-          renderHostLobby();
         }
       }
     }
@@ -336,29 +512,37 @@
       document.getElementById('player-count').textContent = pArr.length;
       document.getElementById('start-game-btn').disabled = pArr.length === 0;
 
-      if (pArr.length === 0) {
-        grid.innerHTML = '<p style="color: var(--text-dim); grid-column: 1/-1; padding: 20px;">Waiting for players to connect from other devices...</p>';
-        return;
-      }
       grid.innerHTML = pArr.map(p => `
         <div class="p-card">
-          <div class="avatar">🦊</div>
-          <div style="font-weight: 600; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis;">${p.name}</div>
+          <div class="avatar" style="background:${p.color}">${p.avatar}</div>
+          <div style="font-weight: 600; font-size: 0.85rem;">${p.name}</div>
         </div>
       `).join('');
     }
 
     function hostStartGame() {
       roomData.status = 'playing';
-      broadcast({ type: 'game_start', roomData });
-      startLiveGame(roomData.questions[0], 0);
+      currentQIdx = 0;
+      broadcast({ type: 'game_start', roomData, qIdx: 0 });
+      launchQuestion(0);
+    }
+
+    function hostAdvanceQuestion() {
+      currentQIdx++;
+      if (currentQIdx >= roomData.questions.length) {
+        broadcast({ type: 'game_over', scores: roomData.players });
+        showResults(roomData.players);
+      } else {
+        broadcast({ type: 'next_question', qIdx: currentQIdx });
+        launchQuestion(currentQIdx);
+      }
     }
 
     // --- PLAYER LOGIC ---
     function joinRoom() {
       const code = document.getElementById('join-code').value.trim().toUpperCase();
       const name = document.getElementById('join-name').value.trim();
-      if (code.length !== 6) { showToast('Enter valid 6-digit code', 'error'); return; }
+      if (code.length !== 6) { showToast('Enter valid 6-character room code', 'error'); return; }
       if (!name) { showToast('Enter your nickname', 'error'); return; }
 
       playerName = name;
@@ -367,13 +551,16 @@
       goToScreen('screen-player-lobby');
       document.getElementById('player-room-display').textContent = code;
       document.getElementById('player-welcome-title').textContent = `Welcome, ${name}!`;
+      
+      const myAv = document.getElementById('player-my-avatar');
+      myAv.textContent = selectedAvatar;
+      myAv.style.background = selectedColor;
 
       initNetwork(code, handlePlayerMessages);
 
-      // Announce join periodically until game starts
       const joinTimer = setInterval(() => {
         if (roomData.status === 'playing') clearInterval(joinTimer);
-        else broadcast({ type: 'player_join', playerId, name });
+        else broadcast({ type: 'player_join', playerId, name, avatar: selectedAvatar, color: selectedColor });
       }, 1500);
     }
 
@@ -384,7 +571,12 @@
       }
       else if (data.type === 'game_start') {
         roomData = data.roomData;
-        startLiveGame(roomData.questions[0], 0);
+        currentQIdx = 0;
+        launchQuestion(0);
+      }
+      else if (data.type === 'next_question') {
+        currentQIdx = data.qIdx;
+        launchQuestion(data.qIdx);
       }
       else if (data.type === 'game_over') {
         showResults(data.scores);
@@ -396,81 +588,139 @@
       const pArr = Object.values(roomData.players || {});
       grid.innerHTML = pArr.map(p => `
         <div class="p-card">
-          <div class="avatar">🦊</div>
+          <div class="avatar" style="background:${p.color}">${p.avatar}</div>
           <div style="font-weight: 600; font-size: 0.85rem;">${p.name}${p.id === playerId ? ' (You)' : ''}</div>
         </div>
       `).join('');
     }
 
     // --- GAMEPLAY ENGINE ---
-    let activeQ = null;
     let answeredCurrent = false;
 
-    function startLiveGame(q, qIdx) {
-      activeQ = q;
+    function launchQuestion(idx) {
+      const q = roomData.questions[idx];
       answeredCurrent = false;
+      doubleActive = false;
       goToScreen('screen-game');
 
-      document.getElementById('game-q-num').textContent = `QUESTION ${qIdx + 1}`;
-      document.getElementById('game-score-display').textContent = `Score: ${myScore}`;
+      document.getElementById('game-q-num').textContent = `Q ${idx + 1}/${roomData.questions.length}`;
+      document.getElementById('game-score-display').textContent = `${myScore} pts`;
       document.getElementById('game-q-text').textContent = q.text;
+
+      document.getElementById('player-powers-bar').style.display = role === 'player' ? 'flex' : 'none';
+      document.getElementById('host-game-controls').style.display = role === 'host' ? 'block' : 'none';
 
       const grid = document.getElementById('game-answers-grid');
       grid.innerHTML = '';
-      q.options.forEach((opt, idx) => {
+      q.options.filter(o=>o).forEach((opt, i) => {
         const btn = document.createElement('button');
         btn.className = 'ans-btn';
-        btn.innerHTML = `<div class="ans-letter">${['A','B','C','D'][idx]}</div><span>${opt}</span>`;
-        btn.onclick = () => submitAnswer(idx, btn);
+        btn.innerHTML = `<div class="ans-letter">${['A','B','C','D'][i]}</div><span>${opt}</span>`;
+        if (role === 'player') {
+          btn.onclick = () => submitAnswer(i, btn);
+        } else {
+          btn.disabled = true;
+        }
         grid.appendChild(btn);
       });
+
+      startTimer(q.time || 20);
+    }
+
+    function startTimer(seconds) {
+      clearInterval(qTimer);
+      timeLeft = seconds;
+      document.getElementById('timer-display').textContent = `${timeLeft}s`;
+
+      qTimer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer-display').textContent = `${timeLeft}s`;
+        if (timeLeft <= 0) {
+          clearInterval(qTimer);
+          if (role === 'player' && !answeredCurrent) {
+            submitAnswer(-1, null);
+          }
+        }
+      }, 1000);
+    }
+
+    function usePower(type) {
+      if (usedPowers[type] || answeredCurrent) return;
+      usedPowers[type] = true;
+      document.getElementById(`pw-${type}`).classList.add('used');
+
+      if (type === 'double') {
+        doubleActive = true;
+        showToast('⚡ 2x Points Activated!', 'success');
+      }
+      else if (type === '5050') {
+        const q = roomData.questions[currentQIdx];
+        const wrongOpts = q.options.map((_, i) => i).filter(i => i !== q.correct);
+        const remove = wrongOpts.sort(() => Math.random() - 0.5).slice(0, 2);
+        document.querySelectorAll('.ans-btn').forEach((btn, i) => {
+          if (remove.includes(i)) btn.classList.add('eliminated');
+        });
+        showToast('🎯 2 Wrong Answers Removed!', 'success');
+      }
     }
 
     function submitAnswer(idx, btn) {
       if (answeredCurrent) return;
       answeredCurrent = true;
+      clearInterval(qTimer);
 
-      const isCorrect = idx === activeQ.correct;
-      const pts = isCorrect ? 1000 : 0;
+      const q = roomData.questions[currentQIdx];
+      const isCorrect = idx === q.correct;
+      const speedBonus = Math.round((timeLeft / q.time) * 400);
+      let pts = isCorrect ? (600 + speedBonus) : 0;
+      if (doubleActive) pts *= 2;
+
       if (isCorrect) {
         myScore += pts;
-        btn.classList.add('correct');
-        showToast('Correct! +1000 pts 🎉', 'success');
+        if (btn) btn.classList.add('correct');
+        showToast(`Correct! +${pts} pts 🎉`, 'success');
       } else {
-        btn.classList.add('wrong');
+        if (btn) btn.classList.add('wrong');
         showToast('Incorrect!', 'error');
       }
 
-      document.getElementById('game-score-display').textContent = `Score: ${myScore}`;
+      document.getElementById('game-score-display').textContent = `${myScore} pts`;
       document.querySelectorAll('.ans-btn').forEach(b => b.disabled = true);
 
-      // Send to network
       broadcast({ type: 'submit_answer', playerId, score: pts });
-
-      // If host, finish after 3 seconds
-      if (role === 'host') {
-        setTimeout(() => {
-          broadcast({ type: 'game_over', scores: roomData.players });
-          showResults(roomData.players);
-        }, 3000);
-      }
     }
 
     function showResults(scores) {
+      clearInterval(qTimer);
       goToScreen('screen-results');
       const list = document.getElementById('final-leaderboard');
       const sorted = Object.values(scores || {}).sort((a,b) => b.score - a.score);
       
       list.innerHTML = sorted.map((p, i) => `
         <div style="background: var(--glass); padding: 14px; border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--glass-border);">
-          <span style="font-family: 'Orbitron'; font-weight: 900; color: ${i===0?'var(--gold)':'var(--text)'};">#${i+1} ${p.name}</span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-family: 'Orbitron'; font-weight: 900; color: ${i===0?'var(--gold)':'var(--text)'};">#${i+1}</span>
+            <div class="avatar" style="width:32px; height:32px; font-size:1rem; background:${p.color}">${p.avatar||'🦊'}</div>
+            <span style="font-weight:600;">${p.name}</span>
+          </div>
           <span style="font-family: 'Orbitron'; font-weight: 700; color: var(--secondary);">${p.score} pts</span>
         </div>
       `).join('');
     }
 
-    // Auto-join if URL has ?code=XXXXXX
+    // Init Avatar Grid on load
     window.addEventListener('load', () => {
+      initAvatarBuilder();
+      
+      // Default initial sample question
+      currentQuestions.push({
+        text: 'Which planet is known as the Red Planet?',
+        options: ['Earth', 'Mars', 'Jupiter', 'Venus'],
+        correct: 1,
+        time: 20
+      });
+      renderQuestionsList();
+
       const codeParam = new URLSearchParams(window.location.search).get('code');
       if (codeParam) {
         document.getElementById('join-code').value = codeParam.toUpperCase();
