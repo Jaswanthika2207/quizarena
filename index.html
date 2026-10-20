@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuizArena — Epic Online Quiz Battle</title>
+  <meta name="description" content="QuizArena: The ultimate real-time quiz battle platform with avatars, powers, and epic leaderboards." />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .hero { display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px 20px;gap:32px; }
+    .tagline { font-size:1.15rem;color:var(--text-dim);max-width:520px;line-height:1.7; }
+    .action-cards { display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:600px;width:100%;margin-top:8px; }
+    .action-card {
+      padding:40px 30px;border-radius:var(--radius);
+      border:1.5px solid var(--glass-border);background:var(--glass);
+      backdrop-filter:blur(20px);cursor:pointer;transition:var(--transition);
+      text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:16px;
+    }
+    .action-card:hover { transform:translateY(-8px);border-color:rgba(255,255,255,0.3); box-shadow:var(--shadow); }
+    .action-card.host:hover { border-color:var(--primary);box-shadow:0 16px 40px var(--primary-glow); }
+    .action-card.join:hover { border-color:var(--secondary);box-shadow:0 16px 40px rgba(0,229,255,0.25); }
+    .action-icon { font-size:3.5rem;line-height:1; }
+    .action-title { font-family:'Orbitron',monospace;font-weight:700;font-size:1.3rem;color:var(--text); }
+    .action-desc { font-size:0.85rem;color:var(--text-dim);text-align:center;line-height:1.6; }
+    .features { display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:640px; }
+    .feature-pill {
+      display:flex;align-items:center;gap:8px;padding:8px 18px;
+      border-radius:50px;background:var(--glass);border:1px solid var(--glass-border);
+      font-size:0.82rem;font-weight:500;color:var(--text-dim);
+    }
+    .logo-area { display:flex;flex-direction:column;align-items:center;gap:12px; }
+    .logo-badge { background:linear-gradient(135deg,var(--primary),var(--secondary));padding:3px 16px;border-radius:50px;font-size:0.75rem;font-weight:700;letter-spacing:2px;color:#fff;text-transform:uppercase; }
+    @media(max-width:560px){ .action-cards{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <div class="bg-animated">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="page-wrapper">
+    <section class="hero">
+      <div class="logo-area">
+        <div class="logo-badge">✨ Battle Quiz Platform</div>
+        <h1 class="game-title">Quiz<span>Arena</span></h1>
+        <p class="tagline">
+          The ultimate quiz battle experience — custom avatars, power-ups, 
+          live leaderboards, and real-time competition. Who will rule the arena? 🏆
+        </p>
+      </div>
+
+      <div class="action-cards">
+        <a class="action-card host" href="host.html">
+          <div class="action-icon">🎮</div>
+          <div class="action-title">Host Game</div>
+          <div class="action-desc">Create your quiz, set up questions, and manage the room as the game master.</div>
+        </a>
+        <a class="action-card join" href="join.html">
+          <div class="action-icon">🚀</div>
+          <div class="action-title">Join Game</div>
+          <div class="action-desc">Enter a room code, pick your avatar, and battle against other players!</div>
+        </a>
+      </div>
+
+      <div class="features">
+        <div class="feature-pill">🎭 Custom Avatars</div>
+        <div class="feature-pill">❄️ Time Freeze Power</div>
+        <div class="feature-pill">⚡ Double Points Power</div>
+        <div class="feature-pill">🎯 50-50 Eliminator</div>
+        <div class="feature-pill">🏆 Live Leaderboard</div>
+        <div class="feature-pill">🛡️ Anti-Cheat Guard</div>
+        <div class="feature-pill">⏱️ Speed Scoring</div>
+        <div class="feature-pill">🎊 Victory Confetti</div>
+      </div>
+    </section>
+  </div>
+  <!-- Real-time multiplayer (MQTT = zero config, works instantly!) -->
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script src="js/mqtt-channel.js"></script>
+  <!-- Firebase fallback (optional, needs config) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-channel.js"></script>
+</body>
+</html>

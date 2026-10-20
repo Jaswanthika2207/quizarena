@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuizArena — Results & Leaderboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .results-layout { max-width:760px;width:100%;margin:0 auto;padding:32px 20px 80px; }
+
+    /* ─ Podium ── */
+    .podium-section { display:flex;align-items:flex-end;justify-content:center;gap:16px;margin:36px 0 48px; }
+    .podium-place {
+      display:flex;flex-direction:column;align-items:center;gap:10px;
+    }
+    .podium-bar {
+      display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+      border-radius:12px 12px 0 0;padding:16px 8px 8px;min-width:110px;
+    }
+    .podium-1 .podium-bar { height:160px;background:linear-gradient(180deg,rgba(255,215,0,0.25),rgba(255,215,0,0.05));border:1.5px solid rgba(255,215,0,0.4); }
+    .podium-2 .podium-bar { height:120px;background:linear-gradient(180deg,rgba(192,192,192,0.2),rgba(192,192,192,0.03));border:1.5px solid rgba(192,192,192,0.3); }
+    .podium-3 .podium-bar { height:90px;background:linear-gradient(180deg,rgba(205,127,50,0.2),rgba(205,127,50,0.03));border:1.5px solid rgba(205,127,50,0.3); }
+    .podium-rank-num { font-family:'Orbitron',monospace;font-weight:900;font-size:1.3rem;margin-bottom:6px; }
+    .podium-1 .podium-rank-num { color:var(--gold); }
+    .podium-2 .podium-rank-num { color:#c0c0c0; }
+    .podium-3 .podium-rank-num { color:#cd7f32; }
+    .podium-score-small { font-family:'Orbitron',monospace;font-size:0.75rem;font-weight:700;opacity:0.8; }
+    .podium-name-small { font-size:0.82rem;font-weight:600;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px; }
+    .podium-crown { font-size:2rem;margin-bottom:4px;animation:bounce 1.5s infinite; }
+
+    /* ─ Winner Banner ── */
+    .winner-banner {
+      text-align:center;margin-bottom:32px;
+      background:var(--glass);border:1.5px solid rgba(255,215,0,0.3);
+      border-radius:var(--radius);padding:28px;
+    }
+    .winner-title { font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:900;color:var(--gold);margin-bottom:8px; }
+    .winner-sub { color:var(--text-dim);font-size:0.9rem; }
+
+    /* ─ My Result Card ── */
+    .my-result-card {
+      background:linear-gradient(135deg,rgba(124,92,252,0.15),rgba(0,229,255,0.08));
+      border:1.5px solid rgba(124,92,252,0.4);border-radius:var(--radius);
+      padding:24px;margin-bottom:24px;display:flex;align-items:center;gap:20px;
+      animation:popIn 0.5s ease;
+    }
+    .my-rank-badge {
+      font-family:'Orbitron',monospace;font-weight:900;font-size:2rem;
+      width:70px;height:70px;border-radius:50%;background:var(--primary);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+      box-shadow:0 0 30px var(--primary-glow);
+    }
+    .my-stats { flex:1; }
+    .my-score { font-family:'Orbitron',monospace;font-size:2.2rem;font-weight:900;color:var(--gold); }
+
+    /* ─ Full Leaderboard ── */
+    .leaderboard-section { margin-top:8px; }
+    .lb-title { font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px; }
+    .lb-row {
+      display:flex;align-items:center;gap:14px;padding:12px 16px;
+      border-radius:var(--radius-sm);background:var(--glass);border:1px solid var(--glass-border);
+      margin-bottom:8px;transition:var(--transition);animation:fadeIn 0.4s ease both;
+    }
+    .lb-row:hover { border-color:rgba(255,255,255,0.2);transform:translateX(4px); }
+    .lb-row.is-me { border-color:var(--primary);background:rgba(124,92,252,0.1); }
+    .lb-row.top-1 { border-color:var(--gold);background:rgba(255,215,0,0.08); }
+    .lb-row.top-2 { border-color:#c0c0c0;background:rgba(192,192,192,0.05); }
+    .lb-row.top-3 { border-color:#cd7f32;background:rgba(205,127,50,0.05); }
+    .lb-num { font-family:'Orbitron',monospace;font-weight:900;font-size:1.1rem;min-width:36px;text-align:center; }
+    .lb-name { flex:1;font-weight:600; }
+    .lb-score { font-family:'Orbitron',monospace;font-weight:700;color:var(--secondary); }
+
+    /* ─ Action Buttons ── */
+    .action-row { display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:32px; }
+
+    /* ─ Stats Section ── */
+    .stats-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px; }
+    .stat-card { background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:16px;text-align:center; }
+    .stat-value { font-family:'Orbitron',monospace;font-weight:900;font-size:1.5rem; }
+    .stat-label { font-size:0.72rem;color:var(--text-dim);font-weight:600;text-transform:uppercase;margin-top:4px; }
+
+    /* ─ Confetti ── */
+    #confetti-canvas { z-index:9000;pointer-events:none; }
+
+    @media(max-width:500px) {
+      .podium-section { gap:8px; }
+      .podium-bar { min-width:88px; }
+      .stats-grid { grid-template-columns:1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-animated">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="page-wrapper">
+    <div class="results-layout animate-fadeIn">
+
+      <!-- Header -->
+      <div style="text-align:center;margin-bottom:32px;">
+        <div class="badge badge-gold" style="margin-bottom:12px;">🏆 GAME OVER</div>
+        <h1 class="game-title" style="font-size:2.5rem;">Final <span>Results</span></h1>
+      </div>
+
+      <!-- Winner Banner -->
+      <div class="winner-banner" id="winner-banner">
+        <div style="font-size:3rem;margin-bottom:8px;">🏆</div>
+        <div class="winner-title" id="winner-name">Loading…</div>
+        <div class="winner-sub" id="winner-sub">Champion of this round!</div>
+      </div>
+
+      <!-- Podium -->
+      <div class="podium-section" id="podium-section"></div>
+
+      <!-- My Result (Player only) -->
+      <div class="my-result-card" id="my-result-card" style="display:none;">
+        <div class="my-rank-badge" id="my-rank">-</div>
+        <div>
+          <div class="avatar avatar-md" id="my-result-avatar" style="margin-bottom:8px;"></div>
+        </div>
+        <div class="my-stats">
+          <div style="font-size:0.8rem;color:var(--text-dim);font-weight:600;text-transform:uppercase;">Your Score</div>
+          <div class="my-score" id="my-final-score">0</div>
+          <div style="color:var(--text-dim);font-size:0.85rem;" id="my-result-name">Player</div>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <!-- Full Leaderboard -->
+      <div class="leaderboard-section">
+        <div class="lb-title">📊 Full Leaderboard</div>
+        <div id="leaderboard-list"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="action-row">
+        <a href="index.html" class="btn btn-primary btn-lg">🏠 Home</a>
+        <a href="host.html" class="btn btn-ghost">🎮 New Game</a>
+        <button class="btn btn-gold" onclick="QA.confetti()">🎊 Celebrate!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real-time multiplayer -->
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script src="js/mqtt-channel.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-channel.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    window.addEventListener('load', () => {
+      const role = new URLSearchParams(location.search).get('role') || 'player';
+      const finalScores = JSON.parse(localStorage.getItem('qa_final_scores') || '[]');
+      const myId = localStorage.getItem('qa_my_id') || '';
+      const playerData = QA.getPlayer();
+
+      if (!finalScores.length) {
+        // Demo data if nothing saved
+        finalScores.push({ id:'demo1', name:'Player 1', avatar:'🦊', color:'linear-gradient(135deg,#7c5cfc,#a855f7)', score: 2850 });
+        finalScores.push({ id:'demo2', name:'Player 2', avatar:'🐱', color:'linear-gradient(135deg,#00e5ff,#0080ff)', score: 2100 });
+        finalScores.push({ id:'demo3', name:'Player 3', avatar:'🦁', color:'linear-gradient(135deg,#ff4b7e,#ff8c42)', score: 1640 });
+      }
+
+      const sorted = [...finalScores].sort((a,b) => b.score - a.score);
+      const winner = sorted[0];
+      const myEntry = sorted.find(s => s.id === myId || s.id === playerData?.id);
+      const myRank = myEntry ? sorted.indexOf(myEntry) + 1 : null;
+
+      // ── Winner Banner ──────────────────────────────────────
+      document.getElementById('winner-name').textContent = `🏆 ${winner?.name || 'Unknown'} Wins!`;
+      document.getElementById('winner-sub').textContent = `With ${(winner?.score||0).toLocaleString()} points — Champion of this round!`;
+
+      // ── Podium ─────────────────────────────────────────────
+      const podiumSection = document.getElementById('podium-section');
+      const podiumOrder = [1,0,2]; // 2nd, 1st, 3rd
+      const podiumSizes = [120, 160, 90];
+      const ranks = ['🥈','🥇','🥉'];
+      const podiumColors = ['#c0c0c0','var(--gold)','#cd7f32'];
+
+      podiumOrder.forEach((idx, pos) => {
+        const p = sorted[idx];
+        if (!p) return;
+        const div = document.createElement('div');
+        const rank = idx + 1;
+        div.className = `podium-place podium-${rank}`;
+        div.style.animationDelay = `${pos * 0.15}s`;
+        div.innerHTML = `
+          ${rank === 1 ? '<div class="podium-crown">👑</div>' : ''}
+          <div class="avatar avatar-md" style="background:${p.color||'#7c5cfc'};margin-bottom:6px;">${p.avatar||'🦊'}</div>
+          <div class="podium-name-small">${p.name}</div>
+          <div class="podium-bar">
+            <div class="podium-rank-num">${ranks[pos]}</div>
+            <div class="podium-score-small">${(p.score||0).toLocaleString()}</div>
+          </div>`;
+        div.style.animation = 'popIn 0.5s ease both';
+        podiumSection.appendChild(div);
+      });
+
+      // ── My Result Card ─────────────────────────────────────
+      if (role === 'player' && myEntry) {
+        const card = document.getElementById('my-result-card');
+        card.style.display = 'flex';
+        document.getElementById('my-rank').textContent = `#${myRank}`;
+        document.getElementById('my-final-score').textContent = (myEntry.score||0).toLocaleString();
+        document.getElementById('my-result-name').textContent = myEntry.name;
+        const av = document.getElementById('my-result-avatar');
+        av.textContent = myEntry.avatar || '🦊';
+        av.style.background = myEntry.color || '#7c5cfc';
+
+        // Rank message
+        const msgs = ['','🏆 CHAMPION!','🥈 Runner Up!','🥉 Third Place!'];
+        if (myRank <= 3) {
+          document.getElementById('my-rank').style.background = ['','linear-gradient(135deg,#ffd700,#ff9500)','linear-gradient(135deg,#c0c0c0,#888)','linear-gradient(135deg,#cd7f32,#8b4513)'][myRank];
+        }
+      }
+
+      // ── Stats ──────────────────────────────────────────────
+      const statsGrid = document.getElementById('stats-grid');
+      const totalPlayers = sorted.length;
+      const avgScore = totalPlayers ? Math.round(sorted.reduce((s,p)=>s+(p.score||0),0)/totalPlayers) : 0;
+      const topScore = sorted[0]?.score || 0;
+      statsGrid.innerHTML = `
+        <div class="stat-card"><div class="stat-value" style="color:var(--secondary);">${totalPlayers}</div><div class="stat-label">Players</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--gold);">${topScore.toLocaleString()}</div><div class="stat-label">Top Score</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--primary);">${avgScore.toLocaleString()}</div><div class="stat-label">Avg Score</div></div>`;
+
+      // ── Full Leaderboard ───────────────────────────────────
+      const list = document.getElementById('leaderboard-list');
+      sorted.forEach((p, i) => {
+        const rank = i + 1;
+        const isMe = p.id === myId || p.id === playerData?.id;
+        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+        const row = document.createElement('div');
+        row.className = `lb-row top-${rank} ${isMe?'is-me':''}`;
+        row.style.animationDelay = `${i * 0.06}s`;
+        row.innerHTML = `
+          <div class="lb-num">${medal}</div>
+          <div class="avatar avatar-sm" style="background:${p.color||'#7c5cfc'}">${p.avatar||'🦊'}</div>
+          <div class="lb-name">${p.name}${isMe?' <span class="badge badge-primary" style="font-size:0.65rem;padding:2px 8px;">YOU</span>':''}</div>
+          <div class="lb-score">${(p.score||0).toLocaleString()}</div>`;
+        list.appendChild(row);
+      });
+
+      // ── Confetti for winners ───────────────────────────────
+      if (role === 'player' && myRank <= 3) {
+        setTimeout(QA.confetti, 500);
+      } else if (role === 'host') {
+        setTimeout(QA.confetti, 500);
+      }
+    });
+  </script>
+</body>
+</html>

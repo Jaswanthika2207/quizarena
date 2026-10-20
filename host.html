@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuizArena — Host Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .host-layout { max-width:900px;width:100%;margin:0 auto;padding:32px 20px 80px; }
+    .top-nav { display:flex;align-items:center;justify-content:space-between;margin-bottom:36px; }
+    .nav-brand { font-family:'Orbitron',monospace;font-weight:900;font-size:1.5rem;
+      background:linear-gradient(135deg,var(--primary),var(--secondary));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+
+    .steps { display:flex;gap:0;margin-bottom:32px;position:relative; }
+    .step-item { flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;z-index:1; }
+    .step-dot { width:36px;height:36px;border-radius:50%;background:var(--glass);border:2px solid var(--glass-border);
+      display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;transition:var(--transition); }
+    .step-item.active .step-dot { background:var(--primary);border-color:var(--primary);box-shadow:0 0 20px var(--primary-glow); }
+    .step-item.done .step-dot { background:var(--green);border-color:var(--green);color:#000; }
+    .step-label { font-size:0.75rem;color:var(--text-dim);text-align:center;font-weight:500; }
+    .step-line { position:absolute;top:18px;left:50%;right:-50%;height:2px;background:var(--glass-border);z-index:0; }
+    .step-item.done .step-line { background:var(--green); }
+
+    .panel { display:none; }
+    .panel.active { display:block;animation:fadeIn 0.4s ease; }
+
+    .quiz-meta-grid { display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px; }
+
+    .question-list { display:flex;flex-direction:column;gap:14px;margin-bottom:24px; }
+    .question-item { background:var(--glass);border:1.5px solid var(--glass-border);border-radius:var(--radius);padding:20px;position:relative; }
+    .q-header { display:flex;align-items:center;gap:12px;margin-bottom:16px; }
+    .q-num { background:var(--primary);color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0; }
+    .q-text-preview { flex:1;font-weight:600;font-size:0.95rem; }
+    .q-actions { display:flex;gap:8px; }
+    .q-type-tag { font-size:0.72rem;padding:3px 10px;border-radius:50px;background:rgba(124,92,252,0.2);color:var(--primary);border:1px solid rgba(124,92,252,0.3);font-weight:600; }
+
+    .add-q-form { background:var(--glass);border:1.5px solid var(--glass-border);border-radius:var(--radius);padding:28px; }
+    .options-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px; }
+    .option-input-wrap { display:flex;align-items:center;gap:10px;position:relative; }
+    .option-letter { width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.8rem;flex-shrink:0; }
+    .opt-a { background:rgba(255,75,126,0.2);color:#ff4b7e; }
+    .opt-b { background:rgba(0,229,255,0.2);color:#00e5ff; }
+    .opt-c { background:rgba(255,215,0,0.2);color:#ffd700; }
+    .opt-d { background:rgba(0,255,170,0.2);color:#00ffaa; }
+    .correct-radio { accent-color:var(--green);width:18px;height:18px;cursor:pointer;flex-shrink:0; }
+
+    .lobby-header { text-align:center;margin-bottom:36px; }
+    .lobby-header h2 { font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:700;margin-bottom:8px; }
+    .players-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:16px;margin-bottom:32px; }
+    .player-card { background:var(--glass);border:1.5px solid var(--glass-border);border-radius:var(--radius);padding:20px;text-align:center;animation:popIn 0.4s ease; }
+    .player-card .p-name { font-weight:600;font-size:0.9rem;margin-top:10px; }
+    .player-count-badge { font-family:'Orbitron',monospace;font-size:3rem;font-weight:900;color:var(--secondary); }
+    .status-dot { width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.5s infinite; }
+
+    .settings-row { display:flex;align-items:center;gap:20px;margin-bottom:20px;flex-wrap:wrap; }
+    .time-select { background:rgba(255,255,255,0.06);border:1.5px solid var(--glass-border);border-radius:var(--radius-sm);padding:10px 16px;color:var(--text);font-family:'Poppins',sans-serif;font-size:0.9rem;outline:none;cursor:pointer; }
+    .time-select option { background:var(--bg-secondary); }
+  </style>
+</head>
+<body>
+  <div class="bg-animated">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="page-wrapper">
+    <div class="host-layout animate-fadeIn">
+      <div class="top-nav">
+        <div class="nav-brand">QuizArena</div>
+        <a href="index.html" class="btn btn-ghost btn-sm">← Back</a>
+      </div>
+
+      <div class="steps" id="steps">
+        <div class="step-item active" id="step-1">
+          <div class="step-dot">1</div>
+          <div class="step-label">Quiz Setup</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-item" id="step-2">
+          <div class="step-dot">2</div>
+          <div class="step-label">Add Questions</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-item" id="step-3">
+          <div class="step-dot">3</div>
+          <div class="step-label">Lobby</div>
+        </div>
+      </div>
+
+      <!-- Panel 1: Quiz Setup -->
+      <div class="panel active" id="panel-setup">
+        <h2 style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:700;margin-bottom:8px;">🎮 Create Your Quiz</h2>
+        <p style="color:var(--text-dim);margin-bottom:28px;">Set up your quiz details before adding questions.</p>
+
+        <div class="glass-card" style="padding:32px;margin-bottom:24px;">
+          <div class="quiz-meta-grid">
+            <div class="form-group">
+              <label class="form-label">Quiz Title</label>
+              <input type="text" id="quiz-title" class="form-input" placeholder="e.g., Science Showdown 🔬" maxlength="60" value="Epic Quiz Battle" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Your Name (Host)</label>
+              <input type="text" id="host-name" class="form-input" placeholder="Your display name" maxlength="30" value="Game Host" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quiz Description (Optional)</label>
+            <input type="text" id="quiz-desc" class="form-input" placeholder="Brief description of your quiz…" maxlength="100" />
+          </div>
+        </div>
+
+        <div class="glass-card" style="padding:32px;">
+          <h3 style="font-weight:600;margin-bottom:16px;">⚙️ Game Settings</h3>
+          <div class="settings-row">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Default Time Per Question</label>
+              <select class="time-select" id="default-time" style="width:100%;">
+                <option value="10">10 seconds</option>
+                <option value="15">15 seconds</option>
+                <option value="20" selected>20 seconds</option>
+                <option value="30">30 seconds</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Points Per Correct Answer</label>
+              <select class="time-select" id="base-points" style="width:100%;">
+                <option value="500">500 points</option>
+                <option value="1000" selected>1000 points</option>
+                <option value="1500">1500 points</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;margin-top:24px;">
+          <button class="btn btn-primary btn-lg" onclick="goToQuestions()">Next: Add Questions →</button>
+        </div>
+      </div>
+
+      <!-- Panel 2: Questions -->
+      <div class="panel" id="panel-questions">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h2 style="font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:700;">📝 Questions</h2>
+            <p style="color:var(--text-dim);margin-top:4px;">Add at least 1 question to start.</p>
+          </div>
+          <div>
+            <span class="badge badge-primary" id="q-count-badge">0 Questions</span>
+          </div>
+        </div>
+
+        <div class="question-list" id="question-list">
+          <div id="empty-q" style="text-align:center;padding:40px;color:var(--text-dim);">
+            <div style="font-size:3rem;margin-bottom:12px;">📋</div>
+            <p>No questions yet. Add your first one below!</p>
+          </div>
+        </div>
+
+        <div class="add-q-form" id="add-q-form">
+          <h3 style="font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+            <span style="background:var(--primary);color:#fff;width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.8rem;" id="q-form-num">+</span>
+            Add Question
+          </h3>
+          <div class="form-group" style="margin-bottom:16px;">
+            <label class="form-label">Question Text</label>
+            <input type="text" id="q-text" class="form-input" placeholder="Type your question here…" maxlength="200" />
+          </div>
+          <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+            <div class="form-group" style="flex:1;min-width:160px;">
+              <label class="form-label">Time Limit</label>
+              <select class="time-select" id="q-time" style="width:100%;">
+                <option value="10">10 sec</option>
+                <option value="15">15 sec</option>
+                <option value="20" selected>20 sec</option>
+                <option value="30">30 sec</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:1;min-width:160px;">
+              <label class="form-label">Question Type</label>
+              <select class="time-select" id="q-type" style="width:100%;" onchange="updateQType()">
+                <option value="mcq">Multiple Choice</option>
+                <option value="truefalse">True / False</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="mcq-options">
+            <label class="form-label" style="margin-bottom:10px;display:block;">Answer Options <span style="color:var(--text-dim);font-weight:400;">(✓ = Correct)</span></label>
+            <div class="options-grid">
+              <div class="option-input-wrap">
+                <span class="option-letter opt-a">A</span>
+                <input type="text" class="form-input" id="opt-0" placeholder="Option A" style="flex:1;" />
+                <input type="radio" name="correct" value="0" class="correct-radio" checked />
+              </div>
+              <div class="option-input-wrap">
+                <span class="option-letter opt-b">B</span>
+                <input type="text" class="form-input" id="opt-1" placeholder="Option B" style="flex:1;" />
+                <input type="radio" name="correct" value="1" class="correct-radio" />
+              </div>
+              <div class="option-input-wrap">
+                <span class="option-letter opt-c">C</span>
+                <input type="text" class="form-input" id="opt-2" placeholder="Option C" style="flex:1;" />
+                <input type="radio" name="correct" value="2" class="correct-radio" />
+              </div>
+              <div class="option-input-wrap">
+                <span class="option-letter opt-d">D</span>
+                <input type="text" class="form-input" id="opt-3" placeholder="Option D" style="flex:1;" />
+                <input type="radio" name="correct" value="3" class="correct-radio" />
+              </div>
+            </div>
+          </div>
+
+          <div id="tf-options" style="display:none;">
+            <label class="form-label" style="margin-bottom:10px;display:block;">Correct Answer</label>
+            <div style="display:flex;gap:16px;">
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;background:rgba(0,255,170,0.1);border:1.5px solid rgba(0,255,170,0.3);border-radius:var(--radius-sm);padding:14px 24px;flex:1;">
+                <input type="radio" name="tf-correct" value="0" checked style="accent-color:var(--green);" /> ✅ True
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;background:rgba(255,68,68,0.1);border:1.5px solid rgba(255,68,68,0.3);border-radius:var(--radius-sm);padding:14px 24px;flex:1;">
+                <input type="radio" name="tf-correct" value="1" style="accent-color:var(--red);" /> ❌ False
+              </label>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;margin-top:20px;gap:12px;">
+            <button class="btn btn-ghost" onclick="clearQForm()">Clear</button>
+            <button class="btn btn-primary" onclick="addQuestion()">+ Add Question</button>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;margin-top:28px;">
+          <button class="btn btn-ghost" onclick="showPanel('setup')">← Back</button>
+          <button class="btn btn-primary btn-lg" onclick="createRoom()">Create Room & Open Lobby 🚀</button>
+        </div>
+      </div>
+
+      <!-- Panel 3: Lobby -->
+      <div class="panel" id="panel-lobby">
+        <div class="lobby-header">
+          <div class="badge badge-green" style="margin-bottom:16px;"><span class="status-dot"></span> Lobby Open</div>
+          <div class="room-code-display" id="lobby-code">------</div>
+          <div id="share-link" style="margin-top:12px;font-size:0.95rem;color:var(--text-dim);"></div>
+        </div>
+
+        <div class="glass-card" style="padding:28px;margin-bottom:24px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+            <div>
+              <h3 style="font-weight:700;font-size:1.1rem;">👥 Connected Players</h3>
+              <p style="color:var(--text-dim);font-size:0.85rem;margin-top:2px;">Waiting for players from other devices to join…</p>
+            </div>
+            <div class="player-count-badge" id="player-count">0</div>
+          </div>
+          <div class="players-grid" id="players-grid">
+            <div id="no-players" style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-dim);">
+              <div style="font-size:2.5rem;margin-bottom:8px;">🕐</div>
+              <p>No players joined yet… Share the code or link!</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <button class="btn btn-ghost" onclick="kickAll()">🚫 Clear Lobby</button>
+          <button class="btn btn-primary btn-lg" style="flex:1;" id="start-btn" onclick="startGame()" disabled>
+            🎮 Start Game
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script src="js/mqtt-channel.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    let questions = [];
+    let roomData = null;
+    let hostChannel = null;
+    let lobbySyncInterval = null;
+
+    function showPanel(name) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.getElementById(`panel-${name}`).classList.add('active');
+      const map = {setup:1, questions:2, lobby:3};
+      const stepNum = map[name];
+      document.querySelectorAll('.step-item').forEach((s,i) => {
+        s.classList.remove('active','done');
+        if(i+1 < stepNum) s.classList.add('done');
+        else if(i+1 === stepNum) s.classList.add('active');
+      });
+    }
+
+    function goToQuestions() {
+      const title = document.getElementById('quiz-title').value.trim();
+      const host = document.getElementById('host-name').value.trim();
+      if (!title) { QA.toast('Please enter a quiz title!','error'); return; }
+      if (!host) { QA.toast('Please enter your name!','error'); return; }
+      showPanel('questions');
+    }
+
+    function updateQType() {
+      const type = document.getElementById('q-type').value;
+      document.getElementById('mcq-options').style.display = type==='mcq' ? 'block' : 'none';
+      document.getElementById('tf-options').style.display = type==='truefalse' ? 'block' : 'none';
+    }
+
+    function addQuestion() {
+      const text = document.getElementById('q-text').value.trim();
+      const time = parseInt(document.getElementById('q-time').value);
+      const type = document.getElementById('q-type').value;
+      if (!text) { QA.toast('Question text is required!','error'); return; }
+
+      let options, correct;
+      if (type === 'mcq') {
+        options = ['opt-0','opt-1','opt-2','opt-3'].map(id => document.getElementById(id).value.trim());
+        if (options.filter(o=>o).length < 2) { QA.toast('Add at least 2 answer options!','error'); return; }
+        correct = parseInt(document.querySelector('input[name="correct"]:checked').value);
+      } else {
+        options = ['True','False'];
+        correct = parseInt(document.querySelector('input[name="tf-correct"]:checked').value);
+      }
+
+      questions.push({ text, time, type, options, correct });
+      renderQuestions();
+      clearQForm();
+      QA.toast('Question added! ✅','success');
+    }
+
+    function renderQuestions() {
+      const list = document.getElementById('question-list');
+      const empty = document.getElementById('empty-q');
+      document.getElementById('q-count-badge').textContent = `${questions.length} Question${questions.length!==1?'s':''}`;
+      if (!questions.length) { empty.style.display='block'; return; }
+      empty.style.display = 'none';
+      const existingItems = list.querySelectorAll('.question-item');
+      existingItems.forEach(el => el.remove());
+      questions.forEach((q,i) => {
+        const item = document.createElement('div');
+        item.className = 'question-item';
+        item.innerHTML = `
+          <div class="q-header">
+            <div class="q-num">${i+1}</div>
+            <div class="q-text-preview">${q.text}</div>
+            <span class="q-type-tag">${q.type==='mcq'?'MCQ':'T/F'}</span>
+            <div class="q-actions">
+              <button class="btn btn-ghost btn-sm" onclick="removeQuestion(${i})">🗑️</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <span class="badge badge-primary">⏱️ ${q.time}s</span>
+            <span class="badge badge-green">✓ ${q.options[q.correct]||'True'}</span>
+          </div>`;
+        list.appendChild(item);
+      });
+      document.getElementById('q-form-num').textContent = questions.length + 1;
+    }
+
+    function removeQuestion(i) {
+      questions.splice(i, 1);
+      renderQuestions();
+      QA.toast('Question removed','warn');
+    }
+
+    function clearQForm() {
+      document.getElementById('q-text').value = '';
+      ['opt-0','opt-1','opt-2','opt-3'].forEach(id => {
+        const el = document.getElementById(id); if(el) el.value='';
+      });
+      document.querySelector('input[name="correct"]').checked = true;
+      document.querySelector('input[name="tf-correct"]').checked = true;
+    }
+
+    function createRoom() {
+      if (!questions.length) { QA.toast('Add at least 1 question!','error'); return; }
+      const code = QA.genCode();
+      roomData = {
+        code: code,
+        hostName: document.getElementById('host-name').value.trim(),
+        title: document.getElementById('quiz-title').value.trim(),
+        desc: document.getElementById('quiz-desc').value.trim(),
+        basePoints: parseInt(document.getElementById('base-points').value),
+        questions: questions,
+        players: {},
+        status: 'lobby',
+        currentQ: -1,
+        createdAt: Date.now(),
+      };
+      QA.setRoom(roomData);
+
+      hostChannel = QA.getChannel(code);
+      hostChannel.onmessage = handleMessage;
+
+      document.getElementById('lobby-code').textContent = code;
+      const link = `${location.protocol}//${location.host}${location.pathname.replace('host.html','')}` + `join.html?code=${code}`;
+      document.getElementById('share-link').innerHTML = `Share URL: <a href="${link}" target="_blank" style="color:var(--gold);word-break:break-all;">${link}</a>`;
+
+      showPanel('lobby');
+      QA.toast(`Room ${code} created! 🎉`,'success');
+
+      // Sync heartbeats every 1.5s to ensure cross-device players stay synchronized
+      if (lobbySyncInterval) clearInterval(lobbySyncInterval);
+      lobbySyncInterval = setInterval(() => {
+        if (roomData && roomData.status === 'lobby') {
+          QA.broadcast({
+            type: 'player_list',
+            players: roomData.players,
+            status: roomData.status,
+            questions: roomData.questions,
+            basePoints: roomData.basePoints
+          });
+        }
+      }, 1500);
+    }
+
+    function handleMessage(e) {
+      const msg = e.data;
+      if (!msg || !roomData) return;
+
+      if (msg.type === 'player_join') {
+        const isNew = !roomData.players[msg.playerId];
+        roomData.players[msg.playerId] = {
+          id: msg.playerId,
+          name: msg.name,
+          avatar: msg.avatar,
+          avatarColor: msg.avatarColor,
+          score: 0,
+          powers: { freeze:1, double:1, shield:1 },
+          answered: false, cheatCount: 0
+        };
+        QA.setRoom(roomData);
+        renderPlayers();
+
+        // Broadcast updated state back to all joined devices
+        QA.broadcast({
+          type: 'player_list',
+          players: roomData.players,
+          status: roomData.status,
+          questions: roomData.questions,
+          basePoints: roomData.basePoints
+        });
+
+        if (isNew) {
+          QA.toast(`🎮 ${msg.name} joined from another device!`, 'info');
+        }
+      }
+
+      if (msg.type === 'request_room') {
+        QA.broadcast({
+          type: 'player_list',
+          players: roomData.players,
+          status: roomData.status,
+          questions: roomData.questions,
+          basePoints: roomData.basePoints
+        });
+      }
+    }
+
+    function renderPlayers() {
+      const grid = document.getElementById('players-grid');
+      const noP = document.getElementById('no-players');
+      const count = Object.keys(roomData.players).length;
+      document.getElementById('player-count').textContent = count;
+      const startBtn = document.getElementById('start-btn');
+      startBtn.disabled = (count === 0);
+
+      if (!count) {
+        noP.style.display='block';
+        grid.querySelectorAll('.player-card').forEach(e=>e.remove());
+        return;
+      }
+
+      noP.style.display = 'none';
+      grid.querySelectorAll('.player-card').forEach(e=>e.remove());
+      Object.values(roomData.players).forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'player-card';
+        card.innerHTML = `
+          <div class="avatar avatar-md" style="background:${p.avatarColor};margin:0 auto;">${p.avatar}</div>
+          <div class="p-name">${p.name}</div>`;
+        grid.appendChild(card);
+      });
+    }
+
+    function startGame() {
+      if (!Object.keys(roomData.players).length) { QA.toast('Need at least 1 player!','error'); return; }
+      roomData.status = 'playing';
+      QA.setRoom(roomData);
+
+      const startBtn = document.getElementById('start-btn');
+      startBtn.disabled = true;
+      startBtn.textContent = '🚀 Launching Game...';
+
+      const payload = {
+        type: 'game_start',
+        questions: roomData.questions,
+        basePoints: roomData.basePoints,
+        players: roomData.players
+      };
+
+      // Broadcast game_start 5 times across 2 seconds to guarantee reception across network latencies
+      let sent = 0;
+      const syncTimer = setInterval(() => {
+        QA.broadcast(payload);
+        sent++;
+        if (sent >= 5) {
+          clearInterval(syncTimer);
+          if (lobbySyncInterval) clearInterval(lobbySyncInterval);
+          window.location.href = 'game.html?role=host';
+        }
+      }, 400);
+    }
+
+    function kickAll() {
+      roomData.players = {};
+      QA.setRoom(roomData);
+      renderPlayers();
+      QA.broadcast({ type:'player_list', players:{} });
+      QA.toast('Lobby cleared','warn');
+    }
+
+    window.addEventListener('load', () => {
+      QA.clearAll();
+      // Add standard default question for quick testing
+      questions.push({
+        text: 'Which planet is known as the Red Planet?',
+        time: 20,
+        type: 'mcq',
+        options: ['Earth', 'Mars', 'Jupiter', 'Venus'],
+        correct: 1
+      });
+      renderQuestions();
+    });
+  </script>
+</body>
+</html>

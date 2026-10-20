@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuizArena — Live Game</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body { overflow:hidden; }
+    .game-layout { display:grid;grid-template-rows:auto 1fr auto;height:100vh;padding:0; }
+
+    .top-bar {
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 24px;background:rgba(0,0,0,0.4);backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--glass-border);z-index:100;position:relative;
+    }
+    .tb-left { display:flex;align-items:center;gap:16px; }
+    .tb-right { display:flex;align-items:center;gap:16px; }
+    .q-progress-text { font-family:'Orbitron',monospace;font-weight:700;font-size:0.9rem;color:var(--text-dim); }
+    .score-display { font-family:'Orbitron',monospace;font-weight:900;font-size:1.1rem;color:var(--gold); }
+    .my-avatar-top { display:flex;align-items:center;gap:10px; }
+    .my-avatar-top .avatar-sm { width:40px;height:40px;font-size:1.2rem; }
+
+    .game-main { overflow-y:auto;padding:24px;display:flex;flex-direction:column;align-items:center; }
+
+    .question-card {
+      background:var(--glass);border:1.5px solid var(--glass-border);
+      border-radius:var(--radius);padding:32px;max-width:800px;width:100%;
+      backdrop-filter:blur(20px);margin-bottom:24px;text-align:center;
+    }
+    .q-number-tag { font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:12px; }
+    .q-text { font-size:clamp(1.1rem,3vw,1.5rem);font-weight:700;line-height:1.5;color:var(--text); }
+
+    .timer-area { display:flex;flex-direction:column;align-items:center;gap:6px;margin:0 24px; }
+    .time-label { font-size:0.7rem;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:1px; }
+
+    .answers-grid { display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:800px;width:100%;margin-bottom:24px; }
+    @media(max-width:600px){ .answers-grid{grid-template-columns:1fr;} }
+
+    .powers-bar { display:flex;gap:12px;justify-content:center;flex-wrap:wrap;max-width:800px;width:100%;padding-bottom:16px; }
+    .power-btn {
+      display:flex;flex-direction:column;align-items:center;gap:6px;
+      padding:12px 20px;border-radius:var(--radius-sm);border:1.5px solid;
+      cursor:pointer;transition:var(--transition);background:rgba(0,0,0,0.3);min-width:100px;
+    }
+    .power-btn.used { opacity:0.3;cursor:not-allowed;filter:grayscale(0.8); }
+    .power-freeze { border-color:rgba(0,229,255,0.5);color:#00e5ff; }
+    .power-double { border-color:rgba(255,215,0,0.5);color:#ffd700; }
+    .power-shield { border-color:rgba(0,255,170,0.5);color:#00ffaa; }
+
+    .freeze-overlay { position:fixed;inset:0;pointer-events:none;z-index:500;background:rgba(0,229,255,0.06);border:4px solid rgba(0,229,255,0.6);display:none; }
+    .freeze-overlay.active { display:block; }
+    .freeze-text { position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;color:#00e5ff;z-index:501;display:none; }
+    .freeze-text.active { display:block; }
+
+    .host-panel { display:none;max-width:800px;width:100%; }
+    .host-panel.active { display:block; }
+    .host-controls { display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:20px; }
+    .live-scores { background:var(--glass);border:1.5px solid var(--glass-border);border-radius:var(--radius);padding:20px;max-width:800px;width:100%; }
+
+    .waiting-screen { display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:24px;text-align:center; }
+    .reveal-overlay { position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);flex-direction:column;gap:16px;opacity:0;pointer-events:none;transition:opacity 0.3s; }
+    .reveal-overlay.active { opacity:1;pointer-events:none; }
+    .reveal-icon { font-size:5rem; }
+    .reveal-text { font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900; }
+
+    .bottom-bar { padding:14px 24px;background:rgba(0,0,0,0.4);backdrop-filter:blur(20px);border-top:1px solid var(--glass-border);display:flex;align-items:center;gap:12px; }
+    .double-active-badge { position:fixed;top:70px;right:16px;z-index:700;background:rgba(255,215,0,0.15);border:1.5px solid var(--gold);border-radius:var(--radius-sm);padding:8px 16px;font-size:0.8rem;font-weight:700;color:var(--gold);display:none; }
+    .double-active-badge.active { display:block; }
+  </style>
+</head>
+<body>
+  <div class="bg-animated" style="opacity:0.5;">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
+
+  <div class="freeze-overlay" id="freeze-overlay"></div>
+  <div class="freeze-text" id="freeze-text">❄️ FROZEN</div>
+  <div class="double-active-badge" id="double-badge">⚡ DOUBLE POINTS ACTIVE</div>
+
+  <div class="reveal-overlay" id="reveal-overlay">
+    <div class="reveal-icon" id="reveal-icon"></div>
+    <div class="reveal-text" id="reveal-text"></div>
+    <div class="reveal-pts" id="reveal-pts"></div>
+  </div>
+
+  <div class="game-layout" id="game-layout">
+    <div class="top-bar">
+      <div class="tb-left">
+        <div class="my-avatar-top">
+          <div class="avatar avatar-sm" id="top-avatar"></div>
+          <span id="top-name" style="font-weight:600;"></span>
+        </div>
+        <span class="q-progress-text" id="q-progress">Q 0/0</span>
+      </div>
+      <div class="timer-area">
+        <div id="timer-ring-container"></div>
+        <div class="time-label">Time</div>
+      </div>
+      <div class="tb-right">
+        <div>
+          <div style="font-size:0.7rem;color:var(--text-dim);text-align:right;">SCORE</div>
+          <div class="score-display" id="score-display">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-main" id="game-main">
+      <div class="waiting-screen" id="waiting-screen">
+        <div style="font-size:4rem;animation:bounce 1.5s infinite;">🎮</div>
+        <h2>Get Ready!</h2>
+        <p style="color:var(--text-dim);">Waiting for the host to send the question…</p>
+      </div>
+
+      <div class="question-card" id="question-card" style="display:none;">
+        <div class="q-number-tag" id="q-num-tag">Question 1</div>
+        <div class="q-text" id="q-text-display"></div>
+      </div>
+
+      <div class="answers-grid" id="answers-grid" style="display:none;"></div>
+
+      <div class="powers-bar" id="powers-bar" style="display:none;">
+        <button class="power-btn power-freeze" id="power-freeze" onclick="usePower('freeze')">
+          <span class="p-icon">❄️</span>
+          <span class="p-name">Time Freeze</span>
+        </button>
+        <button class="power-btn power-double" id="power-double" onclick="usePower('double')">
+          <span class="p-icon">⚡</span>
+          <span class="p-name">Double Points</span>
+        </button>
+        <button class="power-btn power-shield" id="power-shield" onclick="usePower('shield')">
+          <span class="p-icon">🎯</span>
+          <span class="p-name">50-50</span>
+        </button>
+      </div>
+
+      <div class="host-panel" id="host-panel">
+        <div class="host-controls">
+          <button class="btn btn-primary" id="next-q-btn" onclick="hostNextQuestion()">▶ Start Question 1</button>
+          <button class="btn btn-ghost btn-sm" onclick="hostEndGame()">🏁 End Game</button>
+        </div>
+        <div class="live-scores">
+          <h3 style="font-weight:700;margin-bottom:16px;">📊 Live Scoreboard</h3>
+          <div id="live-leaderboard"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="progress-bar" style="flex:1;">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <span style="font-size:0.8rem;color:var(--text-dim);" id="streak-label"></span>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script src="js/mqtt-channel.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    const role = new URLSearchParams(location.search).get('role') || 'player';
+    let roomData = null;
+    let playerData = null;
+    let gameChannel = null;
+    let currentQ = -1;
+    let questions = [];
+    let timer = null;
+    let timeLeft = 0;
+    let maxTime = 20;
+    let answered = false;
+    let answerSelected = -1;
+    let score = 0;
+    let doubleActive = false;
+    let frozen = false;
+    let freezeTimer = null;
+    let streak = 0;
+    let powers = { freeze:1, double:1, shield:1 };
+    let playerScores = {};
+    const LETTERS = ['A','B','C','D'];
+
+    window.addEventListener('load', () => {
+      document.getElementById('timer-ring-container').innerHTML = QA.buildTimerRing('game-timer', 80, 7);
+
+      if (role === 'host') {
+        initHost();
+      } else {
+        initPlayer();
+      }
+    });
+
+    function initHost() {
+      roomData = QA.getRoom();
+      if (!roomData) {
+        QA.toast('No room found','error');
+        setTimeout(() => location.href='host.html', 1500);
+        return;
+      }
+      questions = roomData.questions || [];
+      playerScores = {};
+      Object.values(roomData.players || {}).forEach(p => {
+        playerScores[p.id] = { name: p.name, avatar: p.avatar, color: p.avatarColor, score: 0, streak: 0 };
+      });
+
+      gameChannel = QA.getChannel(roomData.code);
+      gameChannel.onmessage = handleMessage;
+
+      document.getElementById('top-name').textContent = 'HOST';
+      document.getElementById('top-avatar').textContent = '🎮';
+      document.getElementById('q-progress').textContent = `Q 0/${questions.length}`;
+
+      document.getElementById('waiting-screen').style.display = 'none';
+      document.getElementById('host-panel').classList.add('active');
+      document.getElementById('score-display').style.display = 'none';
+
+      renderLiveLeaderboard();
+      updateProgress();
+      QA.toast('Game started! Control questions above.','success');
+    }
+
+    function initPlayer() {
+      playerData = QA.getPlayer();
+      let gd = JSON.parse(localStorage.getItem('qa_game_data') || 'null');
+
+      if (!playerData) {
+        QA.toast('Player session missing!','error');
+        setTimeout(() => location.href='join.html', 1500);
+        return;
+      }
+
+      if (gd && gd.questions) {
+        questions = gd.questions;
+      }
+
+      gameChannel = QA.getChannel(playerData.roomCode);
+      gameChannel.onmessage = handleMessage;
+
+      document.getElementById('top-name').textContent = playerData.name;
+      document.getElementById('top-avatar').textContent = playerData.avatar;
+      document.getElementById('top-avatar').style.background = playerData.avatarColor;
+      document.getElementById('q-progress').textContent = `Q 0/${questions.length || '?'}`;
+      document.getElementById('powers-bar').style.display = 'flex';
+      document.getElementById('waiting-screen').style.display = 'flex';
+
+      // Request state from Host in case player joined late or lost state
+      QA.broadcast({ type: 'request_room' });
+
+      updatePowerButtons();
+      updateProgress();
+    }
+
+    function handleMessage(e) {
+      const msg = e.data;
+      if (!msg) return;
+
+      if (msg.type === 'show_question' && role === 'player') {
+        if (msg.question) {
+          startQuestionWithData(msg.question, msg.questionIndex);
+        } else if (questions[msg.questionIndex]) {
+          startQuestion(msg.questionIndex);
+        }
+      }
+
+      if (msg.type === 'freeze_time' && role === 'player') {
+        applyFreeze(msg.duration || 6);
+      }
+
+      if (msg.type === 'round_end' && role === 'player') {
+        showReveal(msg.correct, msg.correctText);
+      }
+
+      if (msg.type === 'game_end') {
+        endGame(msg.finalScores);
+      }
+
+      if (msg.type === 'answer_submit' && role === 'host') {
+        handlePlayerAnswer(msg);
+      }
+
+      if (msg.type === 'player_list' && role === 'player' && msg.questions) {
+        questions = msg.questions;
+        document.getElementById('q-progress').textContent = `Q ${currentQ >= 0 ? currentQ+1 : 0}/${questions.length}`;
+      }
+    }
+
+    function hostNextQuestion() {
+      currentQ++;
+      if (currentQ >= questions.length) { hostEndGame(); return; }
+
+      const q = questions[currentQ];
+      roomData = QA.getRoom();
+      Object.values(roomData.players || {}).forEach(p => {
+        if(playerScores[p.id]) playerScores[p.id].answered = false;
+      });
+
+      document.getElementById('next-q-btn').disabled = true;
+      document.getElementById('next-q-btn').textContent = `⏳ Question ${currentQ+1} Active…`;
+
+      // Broadcast complete question payload so every device receives question text directly
+      QA.broadcast({
+        type: 'show_question',
+        questionIndex: currentQ,
+        question: q
+      });
+
+      showHostQuestion(q);
+      startTimer(q.time || 20, () => hostEndRound());
+    }
+
+    function showHostQuestion(q) {
+      document.getElementById('q-progress').textContent = `Q ${currentQ+1}/${questions.length}`;
+      document.getElementById('q-num-tag').textContent = `Question ${currentQ+1}`;
+      document.getElementById('q-text-display').textContent = q.text;
+      document.getElementById('question-card
