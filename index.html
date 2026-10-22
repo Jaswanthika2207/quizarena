@@ -86,12 +86,16 @@
     .ans-btn.eliminated { opacity: 0.2; pointer-events: none; }
     .ans-letter { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 900; flex-shrink: 0; }
 
-    .powers-bar { display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; }
+    /* Powers Bar */
+    .powers-bar { display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
     .power-btn { display: flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: var(--radius-sm); border: 1.5px solid var(--glass-border); background: rgba(0,0,0,0.3); color: var(--text); font-weight: 700; font-size: 0.8rem; cursor: pointer; }
     .power-btn:hover:not(.used) { transform: translateY(-2px); border-color: var(--gold); }
     .power-btn.used { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
 
+    /* Timer Ring */
     .timer-badge { font-family: 'Orbitron'; font-weight: 900; font-size: 1.2rem; color: var(--gold); background: rgba(0,0,0,0.4); padding: 6px 16px; border-radius: 50px; border: 1px solid var(--glass-border); }
+    .timer-badge.frozen { color: var(--secondary); border-color: var(--secondary); animation: pulse 1s infinite; }
+    @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
 
     #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
     .toast { background: rgba(18, 20, 28, 0.95); border: 1.5px solid var(--glass-border); padding: 12px 24px; border-radius: 50px; font-weight: 600; font-size: 0.88rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: auto; }
@@ -121,11 +125,11 @@
       </div>
     </div>
 
-    <!-- 2. HOST SETUP & QUESTION BUILDER SCREEN -->
+    <!-- 2. HOST SETUP & QUESTION BUILDER -->
     <div id="screen-host-setup" class="screen">
       <div class="glass-card">
         <h2>🎮 Quiz Setup</h2>
-        <p class="subtitle">Set up details and add as many questions as you like!</p>
+        <p class="subtitle">Set up details and add your custom questions!</p>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group">
@@ -143,7 +147,6 @@
         <h3>📝 Questions Added (<span id="q-added-count">0</span>)</h3>
         <div id="questions-list-container" style="margin: 12px 0;"></div>
 
-        <!-- Add Question Box -->
         <div style="background: rgba(0,0,0,0.2); padding: 18px; border-radius: var(--radius-sm); border: 1.5px dashed var(--glass-border); margin-bottom: 20px;">
           <h4 style="font-size: 0.9rem; margin-bottom: 12px; color: var(--secondary);">+ Add New Question</h4>
           <div class="form-group">
@@ -215,13 +218,11 @@
           <input type="text" id="join-name" class="form-input" placeholder="Player Name" maxlength="20" />
         </div>
 
-        <!-- Avatar Selection -->
         <div class="form-group">
           <label class="form-label">Choose Avatar</label>
           <div class="avatar-grid" id="avatar-grid-container"></div>
         </div>
 
-        <!-- Color Selection -->
         <div class="form-group">
           <label class="form-label">Avatar Color Theme</label>
           <div class="color-grid" id="color-grid-container"></div>
@@ -236,7 +237,7 @@
       </div>
     </div>
 
-    <!-- 5. PLAYER LOBBY WAITING SCREEN -->
+    <!-- 5. PLAYER LOBBY SCREEN -->
     <div id="screen-player-lobby" class="screen">
       <div class="glass-card" style="text-align: center;">
         <div class="avatar-preview" id="player-my-avatar" style="margin-bottom: 12px;">🦊</div>
@@ -267,11 +268,11 @@
       <div class="powers-bar" id="player-powers-bar" style="display: none;">
         <button class="power-btn" id="pw-double" onclick="usePower('double')">⚡ Double Pts</button>
         <button class="power-btn" id="pw-5050" onclick="usePower('5050')">🎯 50-50</button>
+        <button class="power-btn" id="pw-freeze" onclick="usePower('freeze')">❄️ Freeze Time</button>
       </div>
 
       <div class="answers-grid" id="game-answers-grid"></div>
 
-      <!-- Host View Controls -->
       <div id="host-game-controls" style="display: none; margin-top: 10px;">
         <button class="btn btn-primary" style="width: 100%;" id="host-next-btn" onclick="hostAdvanceQuestion()">▶ Next Question</button>
       </div>
@@ -290,7 +291,6 @@
 
   </div>
 
-  <!-- MQTT Engine for Cross-Device Sync -->
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <script>
     const AVATARS = ['🦊', '🦁', '🐱', '🐶', '🐼', '🐯', '🐸', '🐵', '🦄', '🤖', '👾', '🚀'];
@@ -309,7 +309,14 @@
 
     let role = 'player';
     let roomCode = '';
-    let playerId = 'usr_' + Math.random().toString(36).substring(2, 8);
+    
+    // Persistent ID per device session
+    let playerId = sessionStorage.getItem('qa_player_id');
+    if (!playerId) {
+      playerId = 'usr_' + Math.random().toString(36).substring(2, 8);
+      sessionStorage.setItem('qa_player_id', playerId);
+    }
+
     let playerName = '';
     let roomData = { players: {}, status: 'lobby', questions: [] };
     let mqttClient = null;
@@ -319,7 +326,8 @@
     let qTimer = null;
     let timeLeft = 20;
     let doubleActive = false;
-    let usedPowers = { double: false, '5050': false };
+    let timerFrozen = false;
+    let usedPowers = { double: false, '5050': false, freeze: false };
 
     function goToScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -335,7 +343,6 @@
       setTimeout(() => t.remove(), 3000);
     }
 
-    // --- AVATAR BUILDER ---
     function initAvatarBuilder() {
       const avGrid = document.getElementById('avatar-grid-container');
       avGrid.innerHTML = AVATARS.map((a, i) => `
@@ -370,7 +377,6 @@
       box.style.background = selectedColor;
     }
 
-    // --- QUESTION BUILDER LOGIC ---
     function addQuestionToList() {
       const text = document.getElementById('add-q-text').value.trim();
       const opts = [
@@ -421,7 +427,6 @@
       renderQuestionsList();
     }
 
-    // --- NETWORK ENGINE ---
     function initNetwork(code, onMsgCallback) {
       roomCode = code.toUpperCase();
       const brokerUrl = 'wss://broker.hivemq.com:8884/mqtt';
@@ -452,7 +457,6 @@
       mqttClient.publish(`quizarena/v3/room/${roomCode}`, JSON.stringify(data));
     }
 
-    // --- HOST LOGIC ---
     function createRoom() {
       if (!currentQuestions.length) {
         showToast('Add at least 1 question first!', 'error');
@@ -494,11 +498,17 @@
           name: data.name, 
           avatar: data.avatar || '🦊', 
           color: data.color || 'var(--primary)', 
-          score: 0 
+          score: roomData.players[data.playerId]?.score || 0 
         };
         renderHostLobby();
         broadcast({ type: 'sync_lobby', roomData });
-        showToast(`${data.name} joined!`, 'success');
+      }
+      else if (data.type === 'player_leave') {
+        if (roomData.players[data.playerId]) {
+          delete roomData.players[data.playerId];
+          renderHostLobby();
+          broadcast({ type: 'sync_lobby', roomData });
+        }
       }
       else if (data.type === 'submit_answer') {
         if (roomData.players[data.playerId]) {
@@ -539,7 +549,6 @@
       }
     }
 
-    // --- PLAYER LOGIC ---
     function joinRoom() {
       const code = document.getElementById('join-code').value.trim().toUpperCase();
       const name = document.getElementById('join-name').value.trim();
@@ -563,7 +572,7 @@
       const joinTimer = setInterval(() => {
         if (roomData.status === 'playing') clearInterval(joinTimer);
         else broadcast({ type: 'player_join', playerId, name, avatar: selectedAvatar, color: selectedColor });
-      }, 2000);
+      }, 2500);
     }
 
     function handlePlayerMessages(data) {
@@ -596,13 +605,17 @@
       `).join('');
     }
 
-    // --- GAMEPLAY ENGINE ---
     let answeredCurrent = false;
 
     function launchQuestion(idx) {
       const q = roomData.questions[idx];
       answeredCurrent = false;
       doubleActive = false;
+      timerFrozen = false;
+
+      const tBadge = document.getElementById('timer-display');
+      tBadge.classList.remove('frozen');
+
       goToScreen('screen-game');
 
       document.getElementById('game-q-num').textContent = `Q ${idx + 1}/${roomData.questions.length}`;
@@ -635,12 +648,14 @@
       document.getElementById('timer-display').textContent = `${timeLeft}s`;
 
       qTimer = setInterval(() => {
-        timeLeft--;
-        document.getElementById('timer-display').textContent = `${timeLeft}s`;
-        if (timeLeft <= 0) {
-          clearInterval(qTimer);
-          if (role === 'player' && !answeredCurrent) {
-            submitAnswer(-1, null);
+        if (!timerFrozen) {
+          timeLeft--;
+          document.getElementById('timer-display').textContent = `${timeLeft}s`;
+          if (timeLeft <= 0) {
+            clearInterval(qTimer);
+            if (role === 'player' && !answeredCurrent) {
+              submitAnswer(-1, null);
+            }
           }
         }
       }, 1000);
@@ -663,6 +678,19 @@
           if (remove.includes(i)) btn.classList.add('eliminated');
         });
         showToast('🎯 2 Wrong Answers Removed!', 'success');
+      }
+      else if (type === 'freeze') {
+        timerFrozen = true;
+        const tBadge = document.getElementById('timer-display');
+        tBadge.classList.add('frozen');
+        tBadge.textContent = '❄️ FROZEN';
+        showToast('❄️ Time Frozen for 7 Seconds!', 'success');
+        
+        setTimeout(() => {
+          timerFrozen = false;
+          tBadge.classList.remove('frozen');
+          tBadge.textContent = `${timeLeft}s`;
+        }, 7000);
       }
     }
 
@@ -709,6 +737,13 @@
         </div>
       `).join('');
     }
+
+    // Handle tab closing to remove player cleanly
+    window.addEventListener('beforeunload', () => {
+      if (role === 'player' && roomCode) {
+        broadcast({ type: 'player_leave', playerId });
+      }
+    });
 
     window.addEventListener('load', () => {
       initAvatarBuilder();
